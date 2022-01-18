@@ -32,7 +32,34 @@ You can launch many scopes and also leave it in continuous loop:
 sysmemwatch -l -t 30 firefox vscode studio
 ```
 
-![sysmemwatch](sysmemwatch.gif)
+![sysmemwatch](sysmemwatch.jpg)
 
-For more options, please run `sysmemwatch -h`
+
+## Options
+
+For more options, please run `sysmemwatch -h`, you should have something like this
+
+```bash
+
+syswatchmem -- utility for see the memory of each scope launched with systemd-run
+
+Usage:
+  syswatchmem  <scope>... 
+  syswatchmem [--loop] [--no-stats] [--anim <tics>] [--time <delay>] <scope>...
+  syswatchmem -h | --help
+  syswatchmem -v | --version
+
+Examples:
+  syswatchmem -n firefox                # watch the memory of firefox one time without stats only %
+  syswatchmem -l -t 60 firefox vscode   # loop mode: watch the memory of firefox and vscode each 60 seconds
+  syswatchmem -a 5000 firefox vscode    # animate more the memory bars (minus is more slow)
+
+Options:
+  -l, --loop                    Loop forever
+  -t <delay>, --time <delay>    Time between updates [default: 30] seconds
+  -a <tics>, --anim <tics>      Anim speed [default: 10000] minus is slower
+  -n, --no-stats                Disable statistics
+  -h --help                     Show help screen.
+  -v --version                  Show version.
+```
 
