@@ -5,7 +5,7 @@ syswatchmem -- utility for see the memory of each scope launched with systemd-ru
 
 Usage:
   syswatchmem  <scope>... 
-  syswatchmem [--verbose] [--loop] [--time <delay>] <scope>...
+  syswatchmem [--verbose] [--loop] [--time <delay>] [--div <div>] <scope>...
   syswatchmem -h | --help
   syswatchmem -v | --version
 
@@ -13,14 +13,13 @@ Usage:
 Options:
   -l, --loop                    Loop forever
   -t <delay>, --time <delay>    Time between updates [default: 30]
+  -d <div>, --div <div>         Divisor of memory [default: 1000 show Mb]
   -h --help                     Show help screen.
   -v --version                  Show version.
   -s, --verbose                 Enable logs
 
 """
 
-
-from re import T
 from docopt import docopt
 import tqdm
 from tqdm import tqdm
@@ -55,17 +54,20 @@ def printScopes(scopes):
     printBar(scope, mem_cur, mem_max)
 
 if __name__ == '__main__':
-  arguments = docopt(__doc__, version='0.0.1')
-  debugmode = arguments["--verbose"]
-  trefresh = int(arguments["--time"])
-  if trefresh < 1:
-    trefresh = 30
-  print(arguments)
-  if arguments["--loop"]:
-    while True:
-      os.system('cls' if os.name=='nt' else 'clear')
+  try:
+    arguments = docopt(__doc__, version='0.0.1')
+    debugmode = arguments["--verbose"]
+    trefresh = int(arguments["--time"])
+    if trefresh < 1:
+      trefresh = 30
+    print(arguments)
+    if arguments["--loop"]:
+      while True:
+        os.system('cls' if os.name=='nt' else 'clear')
+        printScopes(arguments["<scope>"])
+        time.sleep(trefresh)
+    else: 
       printScopes(arguments["<scope>"])
-      time.sleep(trefresh)
-  else: 
-    printScopes(arguments["<scope>"])
+  except KeyboardInterrupt:
+    print("")
   
