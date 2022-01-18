@@ -25,6 +25,11 @@ Usage:
   syswatchmem -h | --help
   syswatchmem -v | --version
 
+Examples:
+  syswatchmem -n firefox                # watch the memory of firefox one time without stats only %
+  syswatchmem -l -t 60 firefox vscode   # loop mode: watch the memory of firefox and vscode each 60 seconds
+  syswatchmem -a 5000 firefox vscode    # animate more the memory bars (minus is more slow)
+
 Options:
   -l, --loop                    Loop forever
   -t <delay>, --time <delay>    Time between updates [default: 30] seconds
@@ -42,41 +47,42 @@ import os
 import time
 
 stats = True
-tics=100000
+tics = 100000
 
 def printBar(scope, state, max):
   try:
     bar_max = int(int(max))
     bar_cur = int(int(state))
   except:
-    bar_max = 100
+    bar_max = 10E9
     bar_cur = 0
   if bar_cur*100/bar_max > 80:
-    color="red"
+    color = "red"
   elif bar_cur*100/bar_max > 50:
-    color="yellow"
+    color = "yellow"
   else:
-    color="green"
+    color = "green"
 
   if stats:
     bar_format = '{l_bar}{bar:30}{n_fmt}/{total_fmt}'
   else:
     bar_format = '{l_bar}{bar:50}'
-  i=0
-  with tqdm(total=bar_max,desc="{0:>8}".format(scope), position=0, ncols=100, dynamic_ncols=True, colour=color, bar_format=bar_format, unit='Mb', unit_scale=True, smoothing=0.1) as pbar:
+  i = 0
+  with tqdm(total=bar_max,desc="{0:>8}".format(scope), dynamic_ncols=True, colour=color, bar_format=bar_format, unit='Mb', unit_scale=True, smoothing=0.1) as pbar:
     while i < bar_cur:
       pbar.set_postfix('', refresh=False)
       pbar.update(tics)
-      i=i+tics
+      i = i+tics
+
 
 def printScopes(scopes):
   for scope in scopes:
-    # print(scope)
-    memc="systemctl --user show "+scope+".scope | grep MemoryCurrent | sed 's/=/ /g' | awk '{print $2}'"
-    memx="systemctl --user show "+scope+".scope | grep MemoryMax | sed 's/=/ /g' | awk '{print $2}'"
-    mem_cur=subprocess.check_output(memc, shell=True, )
-    mem_max=subprocess.check_output(memx, shell=True)
+    memc = "systemctl --user show "+scope + ".scope | grep MemoryCurrent | sed 's/=/ /g' | awk '{print $2}'"
+    memx = "systemctl --user show "+scope + ".scope | grep MemoryMax | sed 's/=/ /g' | awk '{print $2}'"
+    mem_cur = subprocess.check_output(memc, shell=True, )
+    mem_max = subprocess.check_output(memx, shell=True)
     printBar(scope, mem_cur, mem_max)
+
 
 if __name__ == '__main__':
   try:
@@ -86,14 +92,12 @@ if __name__ == '__main__':
     tics = int(arguments["--anim"])
     if trefresh < 1:
       trefresh = 30
-    # print(arguments)
     if arguments["--loop"]:
       while True:
-        os.system('cls' if os.name=='nt' else 'clear')
+        os.system('cls' if os.name == 'nt' else 'clear')
         printScopes(arguments["<scope>"])
         time.sleep(trefresh)
-    else: 
+    else:
       printScopes(arguments["<scope>"])
   except KeyboardInterrupt:
     print("")
-  
