@@ -1,5 +1,7 @@
 # Systemctl Memory Watcher
 
+![sysmemwatch](sysmemwatch.gif)
+
 Animated watcher for systemdrun user scopes. 
 
 ## Usage
@@ -33,10 +35,4 @@ sysmemwatch -l -t 30 firefox vscode studio
 ![sysmemwatch](sysmemwatch.gif)
 
 For more options, please run `sysmemwatch -h`
-
-
-
-
-
-
 
