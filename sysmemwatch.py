@@ -62,7 +62,7 @@ if __name__ == '__main__':
     div = int(arguments["--div"])
     if trefresh < 1:
       trefresh = 30
-    print(arguments)
+    # print(arguments)
     if arguments["--loop"]:
       while True:
         os.system('cls' if os.name=='nt' else 'clear')
