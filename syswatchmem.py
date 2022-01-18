@@ -13,11 +13,10 @@ Usage:
 Options:
   -l, --loop                    Loop forever
   -t <delay>, --time <delay>    Time between updates [default: 30]
-  -d <div>, --div <div>         Divisor of memory [default: 1000 show Mb]
+  -d <div>, --div <div>         Divisor of memory [default: 1000] Mbytes
   -h --help                     Show help screen.
   -v --version                  Show version.
   -s, --verbose                 Enable logs
-
 """
 
 from docopt import docopt
@@ -27,10 +26,12 @@ import subprocess
 import os
 import time
 
+div=1000
+
 def printBar(scope, state, max):
   try:
-    bar_max = int(int(max)/1000)
-    bar_cur = int(int(state)/1000)
+    bar_max = int(int(max)/div)
+    bar_cur = int(int(state)/div)
   except:
     bar_max = 100
     bar_cur = 0
@@ -58,6 +59,7 @@ if __name__ == '__main__':
     arguments = docopt(__doc__, version='0.0.1')
     debugmode = arguments["--verbose"]
     trefresh = int(arguments["--time"])
+    div = int(arguments["--div"])
     if trefresh < 1:
       trefresh = 30
     print(arguments)
