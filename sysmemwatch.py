@@ -21,18 +21,17 @@ syswatchmem -- utility for see the memory of each scope launched with systemd-ru
 
 Usage:
   syswatchmem  <scope>... 
-  syswatchmem [--verbose] [--loop] [--time <delay>] [--div <div>] <scope>...
+  syswatchmem [--verbose] [--loop] [--stats] [--time <delay>] [--div <div>] <scope>...
   syswatchmem -h | --help
   syswatchmem -v | --version
-
 
 Options:
   -l, --loop                    Loop forever
   -t <delay>, --time <delay>    Time between updates [default: 30]
   -d <div>, --div <div>         Divisor of memory [default: 1000] Mbytes
   -h --help                     Show help screen.
+  -s, --stats                   Enable statistics on the right
   -v --version                  Show version.
-  -s, --verbose                 Enable logs
 """
 
 from docopt import docopt
@@ -43,6 +42,7 @@ import os
 import time
 
 div=1000
+stats = False
 
 def printBar(scope, state, max):
   try:
@@ -57,7 +57,12 @@ def printBar(scope, state, max):
     color="yellow"
   else:
     color="green"
-  for i in tqdm(range(bar_max),desc="{0:>8}".format(scope), position=0, ncols=100, dynamic_ncols=True,colour=color):
+
+  if stats:
+    bar_format='{l_bar}{bar:30}{r_bar}{bar:-10b}'
+  else: 
+    bar_format='{l_bar}{bar:50}'
+  for i in tqdm(range(bar_max),desc="{0:>8}".format(scope), position=0, ncols=100, dynamic_ncols=True,colour=color,bar_format=bar_format):
     if i == bar_cur:
       break
 
@@ -73,9 +78,9 @@ def printScopes(scopes):
 if __name__ == '__main__':
   try:
     arguments = docopt(__doc__, version='0.0.1')
-    debugmode = arguments["--verbose"]
     trefresh = int(arguments["--time"])
     div = int(arguments["--div"])
+    stats = bool(arguments["--stats"])
     if trefresh < 1:
       trefresh = 30
     # print(arguments)
