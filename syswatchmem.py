@@ -30,13 +30,19 @@ import time
 
 def printBar(scope, state, max):
   try:
-    s = (100*int(state))/int(max)
+    bar_max = int(int(max)/1000)
+    bar_cur = int(int(state)/1000)
   except:
-    s = 0
-  tqdm.write(scope+":")
-  for i in tqdm(range(100),position=0, ncols=100, dynamic_ncols=True):
-    # time.sleep(0.05)
-    if i == int(s):
+    bar_max = 100
+    bar_cur = 0
+  if bar_cur*100/bar_max > 80:
+    color="red"
+  elif bar_cur*100/bar_max > 50:
+    color="yellow"
+  else:
+    color="green"
+  for i in tqdm(range(bar_max),desc="{0:>8}".format(scope), position=0, ncols=100, dynamic_ncols=True,colour=color):
+    if i == bar_cur:
       break
 
 def printScopes(scopes):
