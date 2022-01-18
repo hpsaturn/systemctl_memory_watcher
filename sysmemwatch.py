@@ -21,16 +21,16 @@ syswatchmem -- utility for see the memory of each scope launched with systemd-ru
 
 Usage:
   syswatchmem  <scope>... 
-  syswatchmem [--verbose] [--loop] [--stats] [--time <delay>] [--div <div>] <scope>...
+  syswatchmem [--loop] [--no-stats] [--anim <tics>] [--time <delay>] <scope>...
   syswatchmem -h | --help
   syswatchmem -v | --version
 
 Options:
   -l, --loop                    Loop forever
-  -t <delay>, --time <delay>    Time between updates [default: 30]
-  -d <div>, --div <div>         Divisor of memory [default: 1000] Mbytes
+  -t <delay>, --time <delay>    Time between updates [default: 30] seconds
+  -a <tics>, --anim <tics>      Anim speed [default: 100000] minus is slower
+  -n, --no-stats                Disable statistics
   -h --help                     Show help screen.
-  -s, --stats                   Enable statistics on the right
   -v --version                  Show version.
 """
 
@@ -41,13 +41,13 @@ import subprocess
 import os
 import time
 
-div=1000
-stats = False
+stats = True
+tics=100000
 
 def printBar(scope, state, max):
   try:
-    bar_max = int(int(max)/div)
-    bar_cur = int(int(state)/div)
+    bar_max = int(int(max))
+    bar_cur = int(int(state))
   except:
     bar_max = 100
     bar_cur = 0
@@ -59,12 +59,15 @@ def printBar(scope, state, max):
     color="green"
 
   if stats:
-    bar_format='{l_bar}{bar:30}{r_bar}{bar:-10b}'
-  else: 
-    bar_format='{l_bar}{bar:50}'
-  for i in tqdm(range(bar_max),desc="{0:>8}".format(scope), position=0, ncols=100, dynamic_ncols=True,colour=color,bar_format=bar_format):
-    if i == bar_cur:
-      break
+    bar_format = '{l_bar}{bar:30}{n_fmt}/{total_fmt}'
+  else:
+    bar_format = '{l_bar}{bar:50}'
+  i=0
+  with tqdm(total=bar_max,desc="{0:>8}".format(scope), position=0, ncols=100, dynamic_ncols=True, colour=color, bar_format=bar_format, unit='Mb', unit_scale=True, smoothing=0.1) as pbar:
+    while i < bar_cur:
+      pbar.set_postfix('', refresh=False)
+      pbar.update(tics)
+      i=i+tics
 
 def printScopes(scopes):
   for scope in scopes:
@@ -79,8 +82,8 @@ if __name__ == '__main__':
   try:
     arguments = docopt(__doc__, version='0.0.1')
     trefresh = int(arguments["--time"])
-    div = int(arguments["--div"])
-    stats = bool(arguments["--stats"])
+    stats = arguments["--no-stats"] == False
+    tics = int(arguments["--anim"])
     if trefresh < 1:
       trefresh = 30
     # print(arguments)
