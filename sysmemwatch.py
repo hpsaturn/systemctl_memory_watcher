@@ -33,7 +33,7 @@ Examples:
 Options:
   -l, --loop                    Loop forever
   -t <delay>, --time <delay>    Time between updates [default: 30] seconds
-  -a <tics>, --anim <tics>      Anim speed [default: 100000] minus is slower
+  -a <tics>, --anim <tics>      Anim speed [default: 10000] minus is slower
   -n, --no-stats                Disable statistics
   -h --help                     Show help screen.
   -v --version                  Show version.
@@ -47,7 +47,7 @@ import os
 import time
 
 stats = True
-tics = 100000
+tics = 10000
 
 def printBar(scope, state, max):
   try:
@@ -64,13 +64,14 @@ def printBar(scope, state, max):
     color = "green"
 
   if stats:
-    bar_format = '{l_bar}{bar:30}{n_fmt}/{total_fmt}'
+    barf = '{l_bar}{bar:30}{n_fmt}/{total_fmt}'
   else:
-    bar_format = '{l_bar}{bar:50}'
+    barf = '{l_bar}{bar:50}'
+
   i = 0
-  with tqdm(total=bar_max,desc="{0:>8}".format(scope), dynamic_ncols=True, colour=color, bar_format=bar_format, unit='Mb', unit_scale=True, smoothing=0.1) as pbar:
+  scope = "{0:>12}".format(scope)
+  with tqdm(total=bar_max, desc=scope, dynamic_ncols=True, colour=color, bar_format=barf, unit_scale=True) as pbar:
     while i < bar_cur:
-      pbar.set_postfix('', refresh=False)
       pbar.update(tics)
       i = i+tics
 
