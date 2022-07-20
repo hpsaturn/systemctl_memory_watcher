@@ -47,9 +47,8 @@ import os
 import time
 
 stats = True
-tics = 10000
 
-def printBar(scope, state, max):
+def sysCtlPrintBar(scope, state, max):
   try:
     bar_max = int(int(max))
     bar_cur = int(int(state))
@@ -70,19 +69,81 @@ def printBar(scope, state, max):
 
   i = 0
   scope = "{0:>12}".format(scope)
+  tics = 10000
   with tqdm(total=bar_max, desc=scope, dynamic_ncols=True, colour=color, bar_format=barf, unit_scale=True) as pbar:
     while i < bar_cur:
       pbar.update(tics)
       i = i+tics
 
+def sysLocalPrintBar(scope, state, max):
+  if state*100/max > 35:
+    color = "red"
+  elif state*100/max > 25:
+    color = "yellow"
+  else:
+    color = "green"
 
-def printScopes(scopes):
+  if stats:
+    barf = '{l_bar}{bar:30}{n_fmt}/{total_fmt}'
+  else:
+    barf = '{l_bar}{bar:50}'
+
+  i = 0
+  scope = "{0:>12}".format(scope)
+  tics = 100
+  with tqdm(total=max, desc=scope, dynamic_ncols=True, colour=color, bar_format=barf, unit_scale=False) as pbar:
+    while i < state:
+      pbar.update(tics)
+      i = i+tics
+
+def sysFanPrintBar(scope, state, max):
+  if state <= 2500:
+    color = "cyan"
+  elif state > 2500 and state <= 2800:
+    color = "yellow"
+  else:
+    color = "red"
+
+  if stats:
+    barf = '{l_bar}{bar:30}{n_fmt}/{total_fmt}'
+  else:
+    barf = '{l_bar}{bar:50}'
+
+  i = 0
+  scope = "{0:>12}".format(scope)
+  tics = 100
+  with tqdm(total=max, desc=scope, dynamic_ncols=True, colour=color, bar_format=barf, unit_scale=False) as pbar:
+    while i < state:
+      pbar.update(tics)
+      i = i+tics
+
+def executePipes(strcur,strmax):
+  strvcur = subprocess.check_output(strcur, shell=True)
+  strvmax = subprocess.check_output(strmax, shell=True)
+  return [strvcur,strvmax]
+
+
+def sysCtlPrintScopes(scopes):
   for scope in scopes:
+    if scope == "fan":
+      fanp = "cat /sys/devices/platform/asus-nb-wmi/hwmon/hwmon6/fan1_input"
+      strvcur = subprocess.check_output(fanp, shell=True)
+      vcur=int(float(strvcur.split(b'\n')[0]))
+      valm=9000
+      sysFanPrintBar(scope,vcur,valm)
+      continue
     memc = "systemctl --user show "+scope + ".scope | grep MemoryCurrent | sed 's/=/ /g' | awk '{print $2}'"
     memx = "systemctl --user show "+scope + ".scope | grep MemoryMax | sed 's/=/ /g' | awk '{print $2}'"
-    mem_cur = subprocess.check_output(memc, shell=True, )
-    mem_max = subprocess.check_output(memx, shell=True)
-    printBar(scope, mem_cur, mem_max)
+    values = executePipes(memc,memx)
+    if values[1] == b'infinity\n':
+      memc = "memof "+scope+"| awk '{print $1}'"
+      memx = "cat /proc/meminfo | grep MemTotal | awk '{print $2}'"
+      values = executePipes(memc,memx)
+      imemc=int(float(values[0].split(b'\n')[0]))
+      imemx=int(float(values[1].split(b'\n')[0])/1024)
+      sysLocalPrintBar(scope, imemc, imemx)
+      continue
+    sysCtlPrintBar(scope, values[0], values[1])
 
 
 if __name__ == '__main__':
@@ -96,9 +157,9 @@ if __name__ == '__main__':
     if arguments["--loop"]:
       while True:
         os.system('cls' if os.name == 'nt' else 'clear')
-        printScopes(arguments["<scope>"])
+        sysCtlPrintScopes(arguments["<scope>"])
         time.sleep(trefresh)
     else:
-      printScopes(arguments["<scope>"])
+      sysCtlPrintScopes(arguments["<scope>"])
   except KeyboardInterrupt:
     print("")
