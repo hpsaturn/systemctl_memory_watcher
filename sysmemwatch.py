@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # This file is part of the sysmemwatch:
 # https://github.com/hpsaturn/systemctl_memory_watcher
 # Copyright (c) 2022, @hpsaturn, Antonio Vanegas
@@ -126,9 +126,12 @@ def executePipes(strcur,strmax):
 def sysCtlPrintScopes(scopes):
   for scope in scopes:
     if scope == "fan":
-      fanp = "cat /sys/devices/platform/asus-nb-wmi/hwmon/hwmon6/fan1_input"
-      strvcur = subprocess.check_output(fanp, shell=True)
-      vcur=int(float(strvcur.split(b'\n')[0]))
+      try:
+        fanp = "cat /sys/devices/platform/asus-nb-wmi/hwmon/hwmon6/fan1_input"
+        strvcur = subprocess.check_output(fanp, shell=False)
+        vcur=int(float(strvcur.split(b'\n')[0]))
+      except:
+        vcur=0
       valm=9000
       sysFanPrintBar(scope,vcur,valm)
       continue
@@ -141,7 +144,8 @@ def sysCtlPrintScopes(scopes):
       values = executePipes(memc,memx)
       imemc=int(float(values[0].split(b'\n')[0]))
       imemx=int(float(values[1].split(b'\n')[0])/1024)
-      sysLocalPrintBar(scope, imemc, imemx)
+      if imemc > 0 :
+        sysLocalPrintBar(scope, imemc, imemx)
       continue
     sysCtlPrintBar(scope, values[0], values[1])
 
